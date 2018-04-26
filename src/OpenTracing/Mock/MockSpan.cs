@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 
@@ -167,12 +166,12 @@ namespace OpenTracing.Mock
             }
         }
 
-        public ISpan Log(IDictionary<string, object> fields)
+        public ISpan Log(IEnumerable<KeyValuePair<string, object>> fields)
         {
             return Log(DateTimeOffset.UtcNow, fields);
         }
 
-        public ISpan Log(DateTimeOffset timestamp, IDictionary<string, object> fields)
+        public ISpan Log(DateTimeOffset timestamp, IEnumerable<KeyValuePair<string, object>> fields)
         {
             lock (_lock)
             {
@@ -280,10 +279,16 @@ namespace OpenTracing.Mock
 
             public IReadOnlyDictionary<string, object> Fields { get; }
 
-            public LogEntry(DateTimeOffset timestamp, IDictionary<string, object> fields)
+            public LogEntry(DateTimeOffset timestamp, IEnumerable<KeyValuePair<string, object>> fields)
             {
                 Timestamp = timestamp;
-                Fields = new ReadOnlyDictionary<string, object>(fields);
+
+                var fieldsDictionary = new Dictionary<string, object>();
+                foreach (var kvp in fields)
+                {
+                    fieldsDictionary[kvp.Key] = kvp.Value;
+                }
+                Fields = fieldsDictionary;
             }
         }
 
